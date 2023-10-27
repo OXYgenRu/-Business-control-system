@@ -34,14 +34,16 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
         self.stacked_widget.addWidget(self.admin_widget)
         self.stacked_widget.addWidget(self.user_widget)
-        
+
         self.user_type_selection()
 
     def connect_defs_admin_actions(self):
-        self.action_change_type_of_user_admin.triggered.connect(self.change_typed_user_interface)
+        self.action_change_type_of_user_admin.triggered.connect(self.admin_change_typed_user_interface)
+        self.action_exit_admin.triggered.connect(self.exit_app)
 
     def connect_defs_user_actions(self):
-        self.action_change_type_of_user_user.triggered.connect(self.change_typed_user_interface)
+        self.action_change_type_of_user_user.triggered.connect(self.user_change_typed_user_interface)
+        self.action_exit_user.triggered.connect(self.exit_app)
 
     def user_type_selection(self):
         input_dialog = QInputDialog(self)
@@ -49,19 +51,23 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
                  "Клиент - взмаимодействие с бизнесом (потребитель)"]
         text, ok_pressed = input_dialog.getItem(self, 'Выбор типа пользователя', 'Выберите тип пользователя:', items,
                                                 editable=False)
+        # print(ok_pressed)
         if ok_pressed is False:
-            sys.exit(app.exec())
+            # print(ok_pressed)
+
+            self.exit_app()
         self.setCentralWidget(self.stacked_widget)
 
-    def change_typed_user_interface(self):
-        current_widget = self.stacked_widget.currentWidget()
-        if current_widget == self.admin_widget:
-            self.stacked_widget.setCurrentWidget(self.user_widget)
-            self.user_type = "default_user"
+    def admin_change_typed_user_interface(self):
+        self.stacked_widget.setCurrentWidget(self.user_widget)
+        self.user_type = "default_user"
 
-        else:
-            self.stacked_widget.setCurrentWidget(self.admin_widget)
-            self.user_type = "admin"
+    def user_change_typed_user_interface(self):
+        self.stacked_widget.setCurrentWidget(self.admin_widget)
+        self.user_type = "admin"
+
+    def exit_app(self):
+        app.quit()
 
 
 def except_hook(cls, exception, traceback):

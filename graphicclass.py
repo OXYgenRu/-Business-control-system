@@ -31,18 +31,24 @@ class BusinessControlSystemGraphic:
     def create_actions_user(self):
         self.action_change_type_of_user_user = QAction(QIcon("icons/user-icon.svg"), "Change user", self)
         self.action_change_type_of_user_user.setShortcut("Ctrl+D")
+        self.action_exit_user = QAction(QIcon("icons/exit-icon.svg"), "Exit", self)
+        # self.action_exit_user.setShortcut("Alt+F4")
 
     def create_actions_admin(self):
         self.action_change_type_of_user_admin = QAction(QIcon("icons/user-icon.svg"), "Change user", self)
         self.action_change_type_of_user_admin.setShortcut("Ctrl+D")
+        self.action_exit_admin = QAction(QIcon("icons/exit-icon.svg"), "Exit", self)
+        # self.action_exit_admin.setShortcut("Alt+F4")
 
     def create_admin_menubar(self):
         self.menuBarAdmin = QMenuBar()
         self.settingsMenu = self.menuBarAdmin.addMenu("Настройки")
         self.settingsMenu.addAction(self.action_change_type_of_user_admin)
+        self.settingsMenu.addAction(self.action_exit_admin)
 
     def create_user_menubar(self):
         self.menuBarUser = QMenuBar()
         self.settingsMenu = self.menuBarUser.addMenu("Настройки")
         self.settingsMenu.addAction(self.action_change_type_of_user_user)
+        self.settingsMenu.addAction(self.action_exit_user)
         # self.action_change_type_of_user.triggered.connect(self.change_typed_user_interface)
