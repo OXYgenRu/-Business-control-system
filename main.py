@@ -1,0 +1,76 @@
+import csv
+import sys
+
+import random
+
+from PyQt5.QtCore import QDate, QRect, QSize
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLineEdit, QLabel, QLCDNumber,
+                             QCheckBox, QRadioButton,
+                             QMainWindow, QButtonGroup, QGridLayout, QTextEdit, QStatusBar, QTextBrowser,
+                             QTableWidgetItem, QTableWidget, QInputDialog, QLayout, QSizePolicy, QHBoxLayout,
+                             QVBoxLayout, QComboBox, QAction)
+
+from PyQt5 import QtCore, QtGui, QtWidgets
+
+from graphicclass import BusinessControlSystemGraphic
+
+
+class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
+    def __init__(self):
+        super().__init__()
+        self.user_type = ""
+        self.setWindowTitle("Buisness Controll System")
+        self.setGeometry(100, 100, 600, 600)
+
+        self.create_actions_admin()
+        self.connect_defs_admin_actions()
+        self.create_admin_menubar()
+        self.create_actions_user()
+        self.connect_defs_user_actions()
+        self.create_user_menubar()
+        self.init_ui_admin()
+        self.init_ui_user()
+
+        self.stacked_widget.addWidget(self.admin_widget)
+        self.stacked_widget.addWidget(self.user_widget)
+        
+        self.user_type_selection()
+
+    def connect_defs_admin_actions(self):
+        self.action_change_type_of_user_admin.triggered.connect(self.change_typed_user_interface)
+
+    def connect_defs_user_actions(self):
+        self.action_change_type_of_user_user.triggered.connect(self.change_typed_user_interface)
+
+    def user_type_selection(self):
+        input_dialog = QInputDialog(self)
+        items = ["Администратор - управление и доступ к информации",
+                 "Клиент - взмаимодействие с бизнесом (потребитель)"]
+        text, ok_pressed = input_dialog.getItem(self, 'Выбор типа пользователя', 'Выберите тип пользователя:', items,
+                                                editable=False)
+        if ok_pressed is False:
+            sys.exit(app.exec())
+        self.setCentralWidget(self.stacked_widget)
+
+    def change_typed_user_interface(self):
+        current_widget = self.stacked_widget.currentWidget()
+        if current_widget == self.admin_widget:
+            self.stacked_widget.setCurrentWidget(self.user_widget)
+            self.user_type = "default_user"
+
+        else:
+            self.stacked_widget.setCurrentWidget(self.admin_widget)
+            self.user_type = "admin"
+
+
+def except_hook(cls, exception, traceback):
+    sys.__excepthook__(cls, exception, traceback)
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    window = BusinessControlSystem()
+    window.show()
+    sys.excepthook = except_hook
+    sys.exit(app.exec())
