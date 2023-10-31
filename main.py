@@ -3,7 +3,7 @@ import sys
 
 import random
 
-from PyQt5.QtCore import QDate, QRect, QSize
+from PyQt5.QtCore import QDate, QRect, QSize, QTimer
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLineEdit, QLabel, QLCDNumber,
                              QCheckBox, QRadioButton,
@@ -23,6 +23,8 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.business_about = ""
         self.user_type = ""
         self.setWindowTitle("Buisness Controll System")
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
         self.setGeometry(100, 100, 1000, 600)
 
         self.create_actions_admin()
@@ -91,9 +93,17 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         app.quit()
 
     def save_business_information(self):
+        self.statusBar().showMessage("Информация сохранена")
+        self.status_bar.setStyleSheet("background-color: green; color: white;")
         self.business_name = self.business_name_edit.toPlainText()
         self.business_about = self.business_about_edit.toPlainText()
         print(self.business_name, self.business_about)
+        QTimer.singleShot(2000, self.restore_default_color)
+        # self.status_bar.setStyleSheet("background-color: white; color: black;")
+
+    def restore_default_color(self):
+        self.status_bar.setStyleSheet("")
+        self.status_bar.showMessage("")
 
 
 def except_hook(cls, exception, traceback):

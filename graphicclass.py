@@ -30,6 +30,8 @@ class BusinessControlSystemGraphic:
         self.user_widget.setMenuBar(self.menuBarUser)
         self.user_business_information_name = QTextEdit(self.user_widget)
         self.user_business_information_about = QTextEdit(self.user_widget)
+        self.user_business_information_name.setReadOnly(True)
+        self.user_business_information_about.setReadOnly(True)
         first_layout = QFormLayout()
         first_layout.addRow(self.user_business_information_name)
         first_layout.addRow(self.user_business_information_about)
