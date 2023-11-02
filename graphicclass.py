@@ -29,12 +29,12 @@ class BusinessControlSystemGraphic:
         self.user_widget = QMainWindow()
         self.user_widget.setMenuBar(self.menuBarUser)
         self.user_business_information_name = QTextEdit(self.user_widget)
-        self.user_business_information_about = QTextEdit(self.user_widget)
+        self.user_business_information_description = QTextEdit(self.user_widget)
         self.user_business_information_name.setReadOnly(True)
-        self.user_business_information_about.setReadOnly(True)
+        self.user_business_information_description.setReadOnly(True)
         first_layout = QFormLayout()
         first_layout.addRow(self.user_business_information_name)
-        first_layout.addRow(self.user_business_information_about)
+        first_layout.addRow(self.user_business_information_description)
         form_layout = QVBoxLayout()
         form_layout.addLayout(first_layout)
 
@@ -46,34 +46,59 @@ class BusinessControlSystemGraphic:
         # self.label1.move(30, 30)
 
     def init_ui_buiness_information(self):
-        # self.buisness_infromatiom_menubar = self.menuBarAdmin
+        # self.business_infromatiom_menubar = self.menuBarAdmin
         self.buiness_information_widget = QMainWindow()
         self.buiness_information_widget.setMenuBar(self.menuBarBuinessInformation)
         self.buiness_information_widget.addToolBar(Qt.LeftToolBarArea, self.buiness_information_tool_bar)
 
-        self.business_name_edit = QTextEdit("Введите название", self.buiness_information_widget)
-        self.business_about_edit = QTextEdit("Введите описание", self.buiness_information_widget)
-        self.save_infromation_button = QPushButton("Сохранить информацию", self.buiness_information_widget)
-        # first_frame = QFrame(self.buiness_information_widget)
-        # second_frame = QFrame(self.buiness_information_widget)
+        first_frame = QFrame(self.buiness_information_widget)
+        first_frame.setFrameShape(QFrame.StyledPanel)
+        second_frame = QFrame(self.buiness_information_widget)
+        second_frame.setFrameShape(QFrame.StyledPanel)
+        third_frame = QFrame(self.buiness_information_widget)
+        third_frame.setFrameShape(QFrame.StyledPanel)
+
+        self.business_name_edit = QTextEdit(first_frame)
+        self.business_description_edit = QTextEdit(first_frame)
+        self.save_infromation_button = QPushButton("Сохранить изменения в файл конфигурации",
+                                                   self.buiness_information_widget)
+        self.current_file = QLineEdit(third_frame)
+        self.current_file.setReadOnly(True)
+        self.business_name_edit.setReadOnly(True)
+        self.business_description_edit.setReadOnly(True)
+        self.open_information_file = QPushButton("Загрузить файл с информацией", self.buiness_information_widget)
         # first_frame.setStyleSheet("border: 1px solid black;")
         # second_frame.setStyleSheet("border: 1px solid black;")
 
         first_layout = QFormLayout()
+        second_layout = QFormLayout()
+        third_layout = QFormLayout()
 
         first_layout.addRow(QLabel("Информация о бизнесе"))
         first_layout.addRow(QLabel("Настройте информацию о бизнесе, которую будут видеть пользователи."))
-        first_layout.addRow(self.business_name_edit, QLabel("Введите название"))
-        first_layout.addRow(self.business_about_edit, QLabel("Введите описание"))
 
-        form_layout = QVBoxLayout()
-        form_layout.addLayout(first_layout, stretch=1)
-        form_layout.addStretch(5)
-        form_layout.addWidget(self.save_infromation_button, stretch=2)
+        second_layout.addRow(QLabel("Просмотр текущего файла"))
+        second_layout.addRow(self.business_name_edit, QLabel("Название"))
+        second_layout.addRow(self.business_description_edit, QLabel("Описание"))
+
+        third_layout.addRow(QLabel("Загружать информацию из файла:"), self.current_file)
+        third_layout.addRow(QLabel("Выбрать новый файл с информацией"), self.open_information_file)
+
+        main_layout = QVBoxLayout()
+
+        first_frame.setLayout(first_layout)
+        second_frame.setLayout(second_layout)
+        third_frame.setLayout(third_layout)
+
+        main_layout.addWidget(first_frame, stretch=1)
+        main_layout.addWidget(third_frame, stretch=1)
+        main_layout.addWidget(second_frame, stretch=2)
+        main_layout.addStretch(5)
+        main_layout.addWidget(self.save_infromation_button, stretch=2)
         # form_layout.addWidget(first_frame)
 
         central_widget = QWidget()
-        central_widget.setLayout(form_layout)
+        central_widget.setLayout(main_layout)
 
         self.buiness_information_widget.setCentralWidget(central_widget)
 
@@ -90,7 +115,7 @@ class BusinessControlSystemGraphic:
         self.action_change_type_of_user_admin.setShortcut("Ctrl+D")
         self.action_exit_admin = QAction(QIcon("icons/exit-icon.svg"), "Выход", self)
         self.action_exit_admin.setShortcut("Alt+F4")
-        self.action_buisness_information = QAction(QIcon("icons/infromation-icon.svg"), "Открыть информацию о бизнесе",
+        self.action_business_information = QAction(QIcon("icons/infromation-icon.svg"), "Открыть информацию о бизнесе",
                                                    self)
         self.action_open_main_page = QAction(QIcon("icons/mainpage-icon.svg"), "Главная страница")
         # self.action_open_main_page.setStyleSheet("color: red; background-color: yellow;")
@@ -100,17 +125,17 @@ class BusinessControlSystemGraphic:
         self.user_now_admin = self.menuBarAdmin.addMenu("Администратор")
         # self.user_now_admin.setStyleSheet("background-color: #FF0000;")
         self.settingsMenu = self.menuBarAdmin.addMenu("Настройки")
-        self.buisnessInformationMenu = self.menuBarAdmin.addMenu("Информация о бизнесе")
+        self.businessInformationMenu = self.menuBarAdmin.addMenu("Информация о бизнесе")
 
         self.settingsMenu.addAction(self.action_change_type_of_user_admin)
         self.settingsMenu.addAction(self.action_exit_admin)
 
-        self.buisnessInformationMenu.addAction(self.action_buisness_information)
+        self.businessInformationMenu.addAction(self.action_business_information)
 
         self.menuBarBuinessInformation = QMenuBar()
         self.menuBarBuinessInformation.addMenu(self.user_now_admin)
         self.menuBarBuinessInformation.addMenu(self.settingsMenu)
-        self.menuBarBuinessInformation.addMenu(self.buisnessInformationMenu)
+        self.menuBarBuinessInformation.addMenu(self.businessInformationMenu)
 
     def create_user_menubar(self):
         self.menuBarUser = QMenuBar()
@@ -126,11 +151,11 @@ class BusinessControlSystemGraphic:
         self.main_tool_bar.setMovable(False)
         self.main_tool_bar.setOrientation(Qt.Vertical)
         self.main_tool_bar.addAction(self.action_open_main_page)
-        self.main_tool_bar.addAction(self.action_buisness_information)
+        self.main_tool_bar.addAction(self.action_business_information)
 
         self.buiness_information_tool_bar = QToolBar()
         self.buiness_information_tool_bar.setContextMenuPolicy(Qt.PreventContextMenu)
         self.buiness_information_tool_bar.setMovable(False)
         self.buiness_information_tool_bar.setOrientation(Qt.Vertical)
         self.buiness_information_tool_bar.addAction(self.action_open_main_page)
-        self.buiness_information_tool_bar.addAction(self.action_buisness_information)
+        self.buiness_information_tool_bar.addAction(self.action_business_information)
