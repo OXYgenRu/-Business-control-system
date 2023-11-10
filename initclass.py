@@ -1,8 +1,3 @@
-import csv
-import sys
-import sqlite3
-import random
-
 from PyQt5.QtCore import QDate, QRect, QSize, Qt
 from PyQt5.QtGui import QFont, QIcon
 from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLineEdit, QLabel, QLCDNumber,
@@ -10,9 +5,11 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLineEdit, QLab
                              QMainWindow, QButtonGroup, QGridLayout, QTextEdit, QStatusBar, QTextBrowser,
                              QTableWidgetItem, QTableWidget, QInputDialog, QLayout, QSizePolicy, QHBoxLayout,
                              QVBoxLayout, QComboBox, QAction, QMenuBar, QStackedWidget, QFrame, QFormLayout, QToolBar,
-                             QListWidget)
+                             QListWidget, QScrollArea)
 
 from PyQt5 import QtCore, QtGui, QtWidgets
+
+from requestclass import Request
 
 
 class BusinessControlSystemGraphic:
@@ -199,9 +196,160 @@ class BusinessControlSystemGraphic:
         self.types_clients_widget.setCentralWidget(central_widget)
 
     def init_ui_db_interface(self):
+        self.local_stacked_widget = QStackedWidget()
+        self.scroll_area = QScrollArea()
+
         self.db_widget = QMainWindow()
         self.db_widget.setMenuBar(self.menuBarDB)
         self.db_widget.addToolBar(Qt.LeftToolBarArea, self.db_tool_bar)
+        self.db_view = QTableWidget(self.db_widget)
+        self.type_db_combobox = QComboBox(self.db_widget)
+        self.type_db_combobox.addItems(["База данных клиентов", "База данных запросов"])
+        self.db_view.setMinimumSize(500, 500)
+        self.use_name_checkbox = QCheckBox("Искать с таким именем", self.db_widget)
+        self.use_secondname_checkbox = QCheckBox("Искать с такой Фамилией", self.db_widget)
+        self.use_surname_checkbox = QCheckBox("Искать с таким отчеством", self.db_widget)
+        self.substr_checkbox = QCheckBox("Искать как подстроку", self.db_widget)
+        self.use_name_edit = QLineEdit(self.db_widget)
+        self.use_secondname_edit = QLineEdit(self.db_widget)
+        self.use_surname_edit = QLineEdit(self.db_widget)
+        self.use_surname_edit.setDisabled(True)
+        self.use_name_edit.setDisabled(True)
+        self.use_secondname_edit.setDisabled(True)
+        self.find_clients_button = QPushButton("Найти таких клиентов", self.db_widget)
+        self.found_strings = QLabel("Найдено строк:", self.db_widget)
+        self.current_client_id = QLineEdit(self.db_widget)
+        self.current_client_name = QLineEdit(self.db_widget)
+        self.current_client_secondname = QLineEdit(self.db_widget)
+        self.current_client_surname = QLineEdit(self.db_widget)
+        self.current_client_id.setReadOnly(True)
+        self.save_changes_button = QPushButton("Сохранить изменения", self.db_widget)
+
+        first_frame = QFrame(self.types_clients_widget)
+        first_frame.setFrameShape(QFrame.StyledPanel)
+        second_frame = QFrame(self.types_clients_widget)
+        second_frame.setFrameShape(QFrame.StyledPanel)
+        third_frame = QFrame(self.types_clients_widget)
+        third_frame.setFrameShape(QFrame.StyledPanel)
+        foth_frame = QFrame(self.types_clients_widget)
+        foth_frame.setFrameShape(QFrame.StyledPanel)
+
+        first_layout = QFormLayout()
+        second_layout = QFormLayout()
+        third_layout = QFormLayout()
+        foth_layout = QFormLayout()
+
+        first_layout.addRow(QLabel("Просмотреть базу данных системы, преминяя различные фильтры."))
+
+        second_layout.addRow(QLabel("Фильтры для загрузки базы данных"))
+        second_layout.addRow(self.type_db_combobox)
+
+        third_layout.addRow(self.use_name_checkbox, self.use_name_edit)
+        third_layout.addRow(self.use_secondname_checkbox, self.use_secondname_edit)
+        third_layout.addRow(self.use_surname_checkbox, self.use_surname_edit)
+        third_layout.addRow(self.substr_checkbox)
+        third_layout.addRow(self.find_clients_button)
+        third_layout.addRow(self.found_strings)
+
+        foth_layout.addRow(QLabel("Выбранный клиент"))
+        foth_layout.addRow(QLabel("Id"), self.current_client_id)
+        foth_layout.addRow(QLabel("Имя"), self.current_client_name)
+        foth_layout.addRow(QLabel("Фамилия"), self.current_client_secondname)
+        foth_layout.addRow(QLabel("Отчество"), self.current_client_surname)
+        foth_layout.addRow(self.save_changes_button)
+
+        first_frame.setLayout(first_layout)
+        second_frame.setLayout(second_layout)
+        third_frame.setLayout(third_layout)
+        foth_frame.setLayout(foth_layout)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(first_frame, stretch=1)
+        main_layout.addWidget(second_frame, stretch=1)
+        main_layout.addWidget(third_frame, stretch=1)
+
+        main_layout.addWidget(self.db_view, stretch=10)
+        main_layout.addWidget(foth_frame, stretch=1)
+
+        self.central_widget_clients = QWidget()
+        self.central_widget_clients.setLayout(main_layout)
+
+        self.scroll_area.setWidgetResizable(True)
+        self.scroll_area.setWidget(self.central_widget_clients)
+
+        self.local_stacked_widget.addWidget(self.scroll_area)
+
+        self.db_widget.setCentralWidget(self.local_stacked_widget)
+
+    def init_db_ui_requets(self):
+        self.scroll_area_table = QScrollArea()
+        self.scroll_area_1 = QScrollArea()
+        self.scroll_area_2 = QScrollArea()
+        self.scroll_area_table.setWidgetResizable(True)
+        self.client_id_checkbox = QCheckBox("Искать с определенным id пользователя", self.db_widget)
+        self.client_id_edit = QLineEdit(self.db_widget)
+        self.client_id_edit.setDisabled(True)
+        self.load_db_requests_button = QPushButton("Загрузить запросы", self.db_widget)
+        self.loaded_rows = QLabel(self.db_widget)
+        self.types_clients_checkbox = QCheckBox("Использовать определенные типы пользователей", self.db_widget)
+        first_frame = QFrame(self.db_widget)
+        first_frame.setFrameShape(QFrame.StyledPanel)
+        second_frame = QFrame(self.db_widget)
+        second_frame.setFrameShape(QFrame.StyledPanel)
+        third_frame = QFrame(self.db_widget)
+        third_frame.setFrameShape(QFrame.StyledPanel)
+        fourth_frame = QFrame(self.db_widget)
+        fourth_frame.setFrameShape(QFrame.StyledPanel)
+        frame_5 = QFrame(self.db_widget)
+        frame_5.setFrameShape(QFrame.StyledPanel)
+        self.scroll_area_2.setWidgetResizable(True)
+        self.scroll_area_2.setWidget(frame_5)
+
+        self.db_view_requests = QVBoxLayout()
+
+        self.type_db_combobox_requests = QComboBox(self.db_widget)
+        self.type_db_combobox_requests.addItems(["База данных клиентов", "База данных запросов"])
+        self.type_db_combobox_requests.setCurrentIndex(1)
+
+        first_layout = QFormLayout()
+        second_layout = QFormLayout()
+        third_layout = QFormLayout()
+        fourth_layout = QFormLayout()
+        self.vbx_layout = QVBoxLayout()
+
+        first_layout.addRow(QLabel("Просмотреть базу данных системы, преминяя различные фильтры."))
+        second_layout.addRow(QLabel("Фильтры для загрузки базы данных"))
+        second_layout.addRow(self.type_db_combobox_requests)
+        fourth_layout.addRow(self.types_clients_checkbox, self.scroll_area_2)
+        fourth_layout.addRow(self.client_id_checkbox, self.client_id_edit)
+        fourth_layout.addRow(self.loaded_rows, self.load_db_requests_button)
+
+        third_layout.addRow(self.db_view_requests)
+
+
+        first_frame.setLayout(first_layout)
+        second_frame.setLayout(second_layout)
+        third_frame.setLayout(third_layout)
+        fourth_frame.setLayout(fourth_layout)
+        frame_5.setLayout(self.vbx_layout)
+
+        self.scroll_area_table.setWidget(third_frame)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(first_frame, stretch=1)
+        main_layout.addWidget(second_frame, stretch=1)
+        main_layout.addWidget(fourth_frame)
+        main_layout.addWidget(self.scroll_area_table, stretch=50)
+        main_layout.addStretch(10)
+
+        self.scroll_area_table.setMinimumSize(10, 500)
+
+        self.central_widget_requests = QWidget()
+        self.central_widget_requests.setLayout(main_layout)
+
+        self.scroll_area_1.setWidgetResizable(True)
+        self.scroll_area_1.setWidget(self.central_widget_requests)
+        self.local_stacked_widget.addWidget(self.scroll_area_1)
 
     def create_actions_user(self):
         self.action_change_type_of_user_user = QAction(QIcon("icons/user-icon.svg"), "Сменить тип пользователя на "
