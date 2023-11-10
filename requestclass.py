@@ -58,13 +58,6 @@ class Request(QMainWindow):
         self.setCentralWidget(central_widget)
 
 
-class Type(QMainWindow):
-    def __init__(self, type=''):
-        super().__init__()
-        self.type = type
-        self.checkbox = QCheckBox(self.type, self)
-        self.setCentralWidget(self.checkbox)
-
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

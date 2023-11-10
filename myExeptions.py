@@ -1,0 +1,2 @@
+class WrongClientInf(Exception):
+    pass

@@ -14,6 +14,9 @@ from requestclass import Request
 
 class BusinessControlSystemGraphic:
     def __init__(self):
+        self.menuBarDB = None
+        self.menuBarTypesClients = None
+        self.menuBarBuinessInformation = None
         self.stacked_widget = QStackedWidget()
         self.check_box_dict = {}
 
@@ -326,7 +329,6 @@ class BusinessControlSystemGraphic:
 
         third_layout.addRow(self.db_view_requests)
 
-
         first_frame.setLayout(first_layout)
         second_frame.setLayout(second_layout)
         third_frame.setLayout(third_layout)
@@ -388,26 +390,21 @@ class BusinessControlSystemGraphic:
         self.dbMenu = self.menuBarAdmin.addMenu("Открыть базу данных клиентов")
         self.dbMenu.addAction(self.action_open_db_page)
 
-        self.menuBarBuinessInformation = QMenuBar()
-        self.menuBarBuinessInformation.addMenu(self.user_now_admin)
-        self.menuBarBuinessInformation.addMenu(self.settingsMenu)
-        self.menuBarBuinessInformation.addMenu(self.businessInformationMenu)
-        self.menuBarBuinessInformation.addMenu(self.typesClientsMenu)
-        self.menuBarBuinessInformation.addMenu(self.dbMenu)
+        self.menuBarBuinessInformation = self.create_menu_bar_by()
+        self.menuBarTypesClients = self.create_menu_bar_by()
+        self.menuBarDB = self.create_menu_bar_by()
+        # self.create_menu_bar_by(self.menuBarBuinessInformation)
+        # self.create_menu_bar_by(self.menuBarTypesClients)
+        # self.create_menu_bar_by(self.menuBarDB)
 
-        self.menuBarTypesClients = QMenuBar()
-        self.menuBarTypesClients.addMenu(self.user_now_admin)
-        self.menuBarTypesClients.addMenu(self.settingsMenu)
-        self.menuBarTypesClients.addMenu(self.businessInformationMenu)
-        self.menuBarTypesClients.addMenu(self.typesClientsMenu)
-        self.menuBarTypesClients.addMenu(self.dbMenu)
-
-        self.menuBarDB = QMenuBar()
-        self.menuBarDB.addMenu(self.user_now_admin)
-        self.menuBarDB.addMenu(self.settingsMenu)
-        self.menuBarDB.addMenu(self.businessInformationMenu)
-        self.menuBarDB.addMenu(self.typesClientsMenu)
-        self.menuBarDB.addMenu(self.dbMenu)
+    def create_menu_bar_by(self):
+        menuBar = QMenuBar()
+        menuBar.addMenu(self.user_now_admin)
+        menuBar.addMenu(self.settingsMenu)
+        menuBar.addMenu(self.businessInformationMenu)
+        menuBar.addMenu(self.typesClientsMenu)
+        menuBar.addMenu(self.dbMenu)
+        return menuBar
 
     def create_user_menubar(self):
         self.menuBarUser = QMenuBar()
@@ -425,6 +422,10 @@ class BusinessControlSystemGraphic:
         self.main_tool_bar.addAction(self.action_business_information)
         self.main_tool_bar.addAction(self.action_open_clients_types_page)
         self.main_tool_bar.addAction(self.action_open_db_page)
+
+        # self.create_tool_bar_by(self.buiness_information_tool_bar)
+        # self.create_tool_bar_by(self.types_clients_tool_bar)
+        # self.create_tool_bar_by(self.db_tool_bar)
 
         self.buiness_information_tool_bar = QToolBar()
         self.buiness_information_tool_bar.setContextMenuPolicy(Qt.PreventContextMenu)
@@ -452,3 +453,14 @@ class BusinessControlSystemGraphic:
         self.db_tool_bar.addAction(self.action_business_information)
         self.db_tool_bar.addAction(self.action_open_clients_types_page)
         self.db_tool_bar.addAction(self.action_open_db_page)
+
+    # def create_tool_bar_by(self, name):
+    #     tool_bar = QToolBar()
+    #     tool_bar.setContextMenuPolicy(Qt.PreventContextMenu)
+    #     tool_bar.setMovable(False)
+    #     tool_bar.setOrientation(Qt.Vertical)
+    #     tool_bar.addAction(self.action_open_main_page)
+    #     tool_bar.addAction(self.action_business_information)
+    #     tool_bar.addAction(self.action_open_clients_types_page)
+    #     tool_bar.addAction(self.action_open_db_page)
+    #     name = tool_bar

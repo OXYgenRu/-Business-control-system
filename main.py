@@ -15,14 +15,13 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from initclass import BusinessControlSystemGraphic
 from fileeditor import FileEditor
 from requestclass import Request
-from requestclass import Type
+from myExeptions import WrongClientInf
 
 
 class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
     def __init__(self):
         super().__init__()
         self.global_path = os.path.dirname(os.path.abspath(__file__))
-        # print(os.path.dirname(os.path.abspath(__file__)))
         self.user_types_list = []
         self.config_data = []
         self.base_user_types_list = []
@@ -80,6 +79,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.find_clients_button.clicked.connect(self.load_clients)
         self.db_view.clicked.connect(self.display_selected_client)
         self.save_changes_button.clicked.connect(self.change_client_inf)
+        self.save_changes_button.clicked.connect(self.load_clients)
         self.base_user_types_list.append(self.check_box_1.text())
         self.base_user_types_list.append(self.check_box_2.text())
         self.base_user_types_list.append(self.check_box_3.text())
@@ -276,7 +276,6 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.status_bar.showMessage("")
 
     def exit_app(self):
-        # print(self.global_path + f"\config.txt")
         self.conn.close()
         with open(self.global_path + f"\config.txt", "w", encoding="utf-8") as file:
             file.writelines(self.config_data)
@@ -307,8 +306,6 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
         if current_item is not None:
             self.current_element_edit.setText(f"{current_item.text()}")
-
-        # print(current_item.text())
 
     def delete_current_element(self):
         if self.current_element_edit.text() in self.base_user_types_list:
@@ -367,7 +364,6 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             id_client = self.cursor.execute(
                 """SELECT * FROM clients WHERE name = ? and secondname = ? and surname = ?""",
                 (name, second_name, surname)).fetchone()[0]
-
             request_id = \
                 self.cursor.execute("""SELECT id FROM requestType WHERE type = ?""", (request_type,)).fetchone()[0]
             self.cursor.execute("""INSERT INTO requests(client,type,request) VALUES (?,?,?)""",
@@ -384,21 +380,43 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def load_clients(self):
         query = """SELECT * FROM clients"""
+        cnt = 0
         if self.use_name_checkbox.isChecked():
             if self.substr_checkbox.isChecked():
-                query += f" WHERE name like '%{self.use_name_edit.text()}%'"
+                if cnt != 0:
+                    query += f" and name like '%{self.use_name_edit.text()}%'"
+                else:
+                    query += f" WHERE name like '%{self.use_name_edit.text()}%'"
             else:
-                query += f" WHERE name = '{self.use_name_edit.text()}'"
-        if self.use_secondname_checkbox.isChecked():
-            if self.substr_checkbox.isChecked():
-                query += f" WHERE secondname like '%{self.use_secondname_edit.text()}%'"
-            else:
-                query += f" WHERE name = '{self.use_secondname_edit.text()}'"
+                if cnt != 0:
+                    query += f" and name = '{self.use_name_edit.text()}'"
+                else:
+                    query += f" WHERE name = '{self.use_name_edit.text()}'"
+            cnt += 1
         if self.use_surname_checkbox.isChecked():
             if self.substr_checkbox.isChecked():
-                query += f" WHERE name like '%{self.use_surname_edit.text()}%'"
+                if cnt != 0:
+                    query += f" and surname like '%{self.use_surname_edit.text()}%'"
+                else:
+                    query += f" WHERE surname like '%{self.use_surname_edit.text()}%'"
             else:
-                query += f" WHERE name = '{self.use_surname_checkbox.text()}'"
+                if cnt != 0:
+                    query += f" and surname = '{self.use_surname_edit.text()}'"
+                else:
+                    query += f" WHERE surname = '{self.use_surname_edit.text()}'"
+            cnt += 1
+        if self.use_secondname_checkbox.isChecked():
+            if self.substr_checkbox.isChecked():
+                if cnt != 0:
+                    query += f" and secondname like '%{self.use_secondname_edit.text()}%'"
+                else:
+                    query += f" WHERE secondname like '%{self.use_secondname_edit.text()}%'"
+            else:
+                if cnt != 0:
+                    query += f" and secondname = '{self.use_secondname_edit.text()}'"
+                else:
+                    query += f" WHERE secondname = '{self.use_secondname_edit.text()}'"
+            cnt += 1
         result = self.cursor.execute(query).fetchall()
         data = []
         for row in result:
@@ -442,7 +460,13 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
     def change_client_inf(self):
         try:
             if self.current_client_id.text() != '':
-                print(self.current_client_name.text())
+                if self.current_client_name.text() == '':
+                    raise WrongClientInf("Имя клиента не может быть пустым")
+                if self.current_client_secondname.text() == '':
+                    raise WrongClientInf("Фамилия клиента не может быть пустым")
+                if self.current_client_surname.text() == '':
+                    raise WrongClientInf("Отчество клиента не может быть пустым")
+
                 query = f"""UPDATE clients SET name = '{self.current_client_name.text().lower()}'  WHERE id = 
                 '{self.current_client_id.text()}'"""
                 self.cursor.execute(query)
@@ -476,44 +500,52 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
     def load_requests(self):
         query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType ON requests.type = requestType.id"""
         if self.client_id_checkbox.isChecked():
-            query += f""" WHERE requests.client = {int(self.client_id_edit.text())}"""
+            query += f""" WHERE requests.client = {(self.client_id_edit.text())}"""
             if self.types_clients_checkbox.isChecked():
-                query += "  and ("
+                local_query = " and ("
+
                 cnt = 0
                 for i in range(self.vbx_layout.count()):
                     if self.client_types_checkbox[i].isChecked():
                         if cnt == 0:
-                            query += f"""  requestType.type = '{self.client_types_checkbox[i].text()}'"""
+                            local_query += f"""  requestType.type = '{self.client_types_checkbox[i].text()}'"""
                         else:
-                            query += f""" or requestType.type = '{self.client_types_checkbox[i].text()}'"""
+                            local_query += f""" or requestType.type = '{self.client_types_checkbox[i].text()}'"""
                         cnt += 1
-                query += ')'
+                local_query += ')'
+                if cnt != 0:
+                    query += local_query
         else:
             cnt = 0
             if self.types_clients_checkbox.isChecked():
                 for i in range(self.vbx_layout.count()):
                     if self.client_types_checkbox[i].isChecked():
-                        print(cnt)
+
                         if cnt == 0:
                             query += f""" WHERE requestType.type = '{self.client_types_checkbox[i].text()}'"""
                         else:
                             query += f""" or requestType.type = '{self.client_types_checkbox[i].text()}'"""
                         cnt += 1
-        print(query)
-        result = self.cursor.execute(query).fetchall()
-        data = []
-        for row in result:
-            data.append(row)
-        self.loaded_rows.setText("Загружено строк: " + str(len(data)))
-        while self.db_view_requests.count():
-            item = self.db_view_requests.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        if len(data) != 0:
-            for row in data:
-                print(row)
-                self.db_view_requests.addWidget(Request(str(row[1]), row[5], row[6], row[7], row[3], row[-1]))
+        try:
+            result = self.cursor.execute(query).fetchall()
+            data = []
+            for row in result:
+                data.append(row)
+            self.loaded_rows.setText("Загружено строк: " + str(len(data)))
+            while self.db_view_requests.count():
+                item = self.db_view_requests.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            if len(data) != 0:
+                for row in data:
+                    self.db_view_requests.addWidget(Request(str(row[1]), row[5], row[6], row[7], row[3], row[-1]))
+        except Exception as error:
+            print(query)
+            self.statusBar().showMessage(
+                f"Ошибка при записи сообщения {error}")
+            self.status_bar.setStyleSheet("background-color: red; color: white;")
+            QTimer.singleShot(5000, self.restore_default_color)
 
     def unlock_client_id_edit(self):
         if self.client_id_checkbox.isChecked():
@@ -535,7 +567,6 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
                     tp = QCheckBox(row[1])
                     self.vbx_layout.addWidget(tp)
                     self.client_types_checkbox.append(tp)
-                    print(row)
         except Exception as error:
             self.statusBar().showMessage(f"Ошибка чтения csv файла:  {str(error)}")
             self.status_bar.setStyleSheet("background-color: red; color: white;")
