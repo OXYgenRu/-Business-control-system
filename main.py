@@ -34,6 +34,8 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.setStatusBar(self.status_bar)
         self.setGeometry(100, 100, 1000, 600)
 
+        self.init_sql()
+
         self.open_config_file()
 
         self.create_actions_admin()
@@ -89,8 +91,6 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.client_id_checkbox.clicked.connect(self.unlock_client_id_edit)
         self.load_answers_button.clicked.connect(self.load_answers)
 
-        self.init_sql()
-
         self.setCentralWidget(self.stacked_widget)
         # self.setCentralWidget(self.buiness_information_widget)
 
@@ -126,7 +126,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
     def clients_types_interface(self):
         self.user_types_list.clear()
         try:
-            with open(self.global_path + f"\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 for row in reader:
                     self.user_types_list.append(row[1])
@@ -164,7 +164,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             QTimer.singleShot(10000, self.restore_default_color)
 
         try:
-            with open(self.global_path + f"\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 type_list = []
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 self.client_types_list.clear()
@@ -179,6 +179,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.user_type = "default_user"
 
     def user_change_typed_user_interface(self):
+        result = self.cursor.execute("""SELECT * FROM  requests""").fetchall()
+        self.request_cnt.setText(str(len(result)))
+        result = self.cursor.execute("""SELECT * FROM  clients""").fetchall()
+        self.client_cnt.setText(str(len(result)))
         self.stacked_widget.setCurrentWidget(self.admin_widget)
         self.user_type = "admin"
 
@@ -191,12 +195,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.current_file.setText(path)
         try:
             with open(path, "r", encoding="utf-8") as file:
-                data = file.read()
-                len_name = int(data[:data.index('\n')])
-                business_name = data[data.index('\n') + 1: data.index('\n') + len_name]
-                business_description = data[data.index('\n') + len_name:len(data)]
-                self.business_name_edit.setText(business_name)
-                self.business_description_edit.setText(business_description)
+                self.load_buisness_information(file)
         except Exception as error:
             self.statusBar().showMessage("Ошибка загрузки файла, некоректный файл или файл не существует")
             self.status_bar.setStyleSheet("background-color: red; color: white;")
@@ -214,10 +213,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def open_config_file(self):
         try:
-            with open(self.global_path + f"\config.txt", 'r+') as config:
+            with open(self.global_path + f"\\config.txt", 'r+') as config:
                 self.config_data = config.readlines()
         except IOError:
-            with open(self.global_path + f"\config.txt", 'w+') as config:
+            with open(self.global_path + f"\\config.txt", 'w+') as config:
                 self.config_data = ['']
                 pass
         if len(self.config_data) == 0:
@@ -229,12 +228,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         if file_path:
             try:
                 with open(file_path, "r", encoding="utf-8") as file:
-                    data = file.read()
-                    len_name = int(data[:data.index('\n')])
-                    business_name = data[data.index('\n') + 1: data.index('\n') + len_name]
-                    business_description = data[data.index('\n') + len_name:len(data)]
-                    self.business_name_edit.setText(business_name)
-                    self.business_description_edit.setText(business_description)
+                    self.load_buisness_information(file)
                     self.current_file.setText(file_path)
                     self.statusBar().showMessage("Файл успешно загружен")
                     self.status_bar.setStyleSheet("background-color: green; color: white;")
@@ -245,6 +239,14 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
                     "Ошибка загрузки файла, некоректный файл или файл не существует. Изменения не сохранены")
                 self.status_bar.setStyleSheet("background-color: red; color: white;")
                 QTimer.singleShot(5000, self.restore_default_color)
+
+    def load_buisness_information(self, file):
+        data = file.read()
+        len_name = int(data[:data.index('\n')])
+        business_name = data[data.index('\n') + 1: data.index('\n') + len_name]
+        business_description = data[data.index('\n') + len_name:len(data)]
+        self.business_name_edit.setText(business_name)
+        self.business_description_edit.setText(business_description)
 
     def save_to_information_file(self):
         file_path = self.current_file.text()
@@ -278,7 +280,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def exit_app(self):
         self.conn.close()
-        with open(self.global_path + f"\config.txt", "w", encoding="utf-8") as file:
+        with open(self.global_path + f"\\config.txt", "w", encoding="utf-8") as file:
             file.writelines(self.config_data)
             app.quit()
 
@@ -323,7 +325,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             self.type_list.addItems(self.user_types_list)
 
     def save_types_clients(self):
-        with open(self.global_path + f"\clients-types.csv", 'w', newline='', encoding="utf8") as csvfile:
+        with open(self.global_path + f"\\clients-types.csv", 'w', newline='', encoding="utf8") as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quotechar='"')
             for i in range(self.type_list.count()):
                 item = self.type_list.item(i)
@@ -339,10 +341,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             QTimer.singleShot(5000, self.restore_default_color)
 
     def init_sql(self):
-        if not os.path.exists(self.global_path + f"\clientDB.sqlite"):
+        if not os.path.exists(self.global_path + f"\\clientDB.sqlite"):
             QMessageBox.warning(self, "Предупреждение", f"База данных не найдена, проверьте базу данных")
         try:
-            self.conn = sqlite3.connect(self.global_path + f"\clientDB.sqlite")
+            self.conn = sqlite3.connect(self.global_path + f"\\clientDB.sqlite")
             self.cursor = self.conn.cursor()
         except Exception as error:
             QMessageBox.warning(self, "Предупреждение", f"Ошибка загрузки базы данных {error}")
@@ -356,7 +358,8 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         massage = self.client_massage.toPlainText()
         try:
             id_client = self.cursor.execute(
-                """SELECT * FROM clients WHERE name = ? and secondname = ? and surname = ?""",
+                """ 
+                SELECT * FROM clients WHERE name = ? and secondname = ? and surname = ?""",
                 (name, second_name, surname)).fetchone()
             if id_client is None:
                 self.cursor.execute("""INSERT INTO clients(name,secondname,surname) VALUES (?,?,?)""",
@@ -472,7 +475,8 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
                 '{self.current_client_id.text()}'"""
                 self.cursor.execute(query)
                 self.conn.commit()
-                query = f"""UPDATE clients SET secondname = '{self.current_client_secondname.text().lower()}'  WHERE id = 
+                query = f"""UPDATE clients SET secondname = '{self.current_client_secondname.text().lower()}' 
+                 WHERE id = 
                               '{self.current_client_id.text()}'"""
                 self.cursor.execute(query)
                 self.conn.commit()
@@ -499,7 +503,8 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             self.type_db_combobox_requests.setCurrentIndex(1)
 
     def load_requests(self):
-        query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType ON requests.type = requestType.id"""
+        query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType 
+        ON requests.type = requestType.id"""
         if self.client_id_checkbox.isChecked():
             query += f""" WHERE requests.client = {(self.client_id_edit.text())}"""
             if self.types_clients_checkbox.isChecked():
@@ -566,7 +571,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def load_client_types(self):
         try:
-            with open(self.global_path + f"\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 self.client_types_checkbox.clear()
                 while self.vbx_layout.count():
@@ -585,8 +590,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def load_answers(self):
         try:
-            query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType ON requests.type = requestType.id"""
-            query += f" WHERE name = '{self.client_name.text()}' and secondname = '{self.client_secondname.text()}' and surname = '{self.client_surname.text()}'"
+            query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType 
+            ON requests.type = requestType.id"""
+            query += (f" WHERE name = '{self.client_name.text()}' and secondname = '{self.client_secondname.text()}' "
+                      f"and surname = '{self.client_surname.text()}'")
             result = self.cursor.execute(query).fetchall()
             data = []
             to_view = []

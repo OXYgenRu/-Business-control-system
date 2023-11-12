@@ -26,6 +26,10 @@ class BusinessControlSystemGraphic:
         self.admin_widget = QMainWindow()
         self.admin_widget.setMenuBar(self.menuBarAdmin)
         self.admin_widget.addToolBar(Qt.LeftToolBarArea, self.main_tool_bar)
+        self.client_cnt = QLineEdit(self.admin_widget)
+        self.request_cnt = QLineEdit(self.admin_widget)
+        self.client_cnt.setReadOnly(True)
+        self.request_cnt.setReadOnly(True)
 
         first_frame = QFrame(self.admin_widget)
         first_frame.setFrameShape(QFrame.StyledPanel)
@@ -39,10 +43,13 @@ class BusinessControlSystemGraphic:
 
         first_layout.addRow(QLabel("Краткая информация:"))
 
+        second_layout.addRow(QLabel("Количество клиентов:"), self.client_cnt)
+        second_layout.addRow(QLabel("Количество запросов:"), self.request_cnt)
+
         main_layout = QVBoxLayout()
         main_layout.addWidget(first_frame, stretch=1)
         main_layout.addWidget(second_frame, stretch=2)
-        main_layout.addStretch(1)
+        main_layout.addStretch(10)
 
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
