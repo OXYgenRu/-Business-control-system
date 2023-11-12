@@ -87,6 +87,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.type_db_combobox_requests.currentTextChanged.connect(self.change_ui_client_db)
         self.load_db_requests_button.clicked.connect(self.load_requests)
         self.client_id_checkbox.clicked.connect(self.unlock_client_id_edit)
+        self.load_answers_button.clicked.connect(self.load_answers)
 
         self.init_sql()
 
@@ -537,11 +538,21 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
                 widget = item.widget()
                 if widget:
                     widget.deleteLater()
+            to_view = []
             if len(data) != 0:
-                for row in data:
-                    self.db_view_requests.addWidget(Request(str(row[1]), row[5], row[6], row[7], row[3], row[-1]))
+                cnt = len(data)
+                for i, row in enumerate(data):
+                    cnt -= 1
+                    to_view.append(
+                        Request(id=str(row[1]), name=row[6], secondname=row[7], surname=row[8], request=row[3],
+                                type=row[-1],
+                                num=cnt, sql_id=row[0], answer=row[4], conn=self.conn, curs=self.cursor,
+                                main_widget=self))
+                if self.time_checkbox.isChecked():
+                    to_view.reverse()
+                for i in range(len(data)):
+                    self.db_view_requests.addWidget(to_view[i])
         except Exception as error:
-            print(query)
             self.statusBar().showMessage(
                 f"Ошибка при записи сообщения {error}")
             self.status_bar.setStyleSheet("background-color: red; color: white;")
@@ -571,6 +582,43 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             self.statusBar().showMessage(f"Ошибка чтения csv файла:  {str(error)}")
             self.status_bar.setStyleSheet("background-color: red; color: white;")
             QTimer.singleShot(10000, self.restore_default_color)
+
+    def load_answers(self):
+        try:
+            query = """SELECT * FROM requests LEFT JOIN clients ON clients.id = requests.client LEFT JOIN requestType ON requests.type = requestType.id"""
+            query += f" WHERE name = '{self.client_name.text()}' and secondname = '{self.client_secondname.text()}' and surname = '{self.client_surname.text()}'"
+            result = self.cursor.execute(query).fetchall()
+            data = []
+            to_view = []
+            for row in result:
+                data.append(row)
+            while self.third_layout.count():
+                item = self.third_layout.takeAt(0)
+                widget = item.widget()
+                if widget:
+                    widget.deleteLater()
+            self.loaded_strings.setText(f"Загружено строк: {len(data)}")
+            if len(data) != 0:
+                cnt = len(data)
+                for i, row in enumerate(data):
+                    cnt -= 1
+                    new_request = Request(id=str(row[1]), name=row[6], secondname=row[7], surname=row[8],
+                                          request=row[3],
+                                          type=row[-1],
+                                          num=cnt, sql_id=row[0], answer=row[4], conn=self.conn, curs=self.cursor,
+                                          main_widget=self)
+                    new_request.save_answer_button.setDisabled(True)
+                    new_request.answer.setReadOnly(True)
+                    to_view.append(new_request)
+                for element in to_view:
+                    self.third_layout.addWidget(element)
+
+        except Exception as error:
+            print(error)
+            self.statusBar().showMessage(
+                f"Ошибка при записи сообщения {error}")
+            self.status_bar.setStyleSheet("background-color: red; color: white;")
+            QTimer.singleShot(5000, self.restore_default_color)
 
 
 def except_hook(cls, exception, traceback):

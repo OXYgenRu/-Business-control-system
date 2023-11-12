@@ -11,6 +11,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 
 from requestclass import Request
 
+MINSCROLAREASIZE = 500
+
 
 class BusinessControlSystemGraphic:
     def __init__(self):
@@ -25,14 +27,42 @@ class BusinessControlSystemGraphic:
         self.admin_widget.setMenuBar(self.menuBarAdmin)
         self.admin_widget.addToolBar(Qt.LeftToolBarArea, self.main_tool_bar)
 
+        first_frame = QFrame(self.admin_widget)
+        first_frame.setFrameShape(QFrame.StyledPanel)
+        second_frame = QFrame(self.admin_widget)
+        second_frame.setFrameShape(QFrame.StyledPanel)
+
+        first_layout = QFormLayout()
+        second_layout = QFormLayout()
+        first_frame.setLayout(first_layout)
+        second_frame.setLayout(second_layout)
+
+        first_layout.addRow(QLabel("Краткая информация:"))
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(first_frame, stretch=1)
+        main_layout.addWidget(second_frame, stretch=2)
+        main_layout.addStretch(1)
+
+        central_widget = QWidget()
+        central_widget.setLayout(main_layout)
+
+        self.admin_widget.setCentralWidget(central_widget)
+
     def init_ui_user(self):
         self.user_widget = QMainWindow()
         self.user_widget.setMenuBar(self.menuBarUser)
+
+        self.scroll_area_3 = QScrollArea()
 
         first_frame = QFrame(self.user_widget)
         first_frame.setFrameShape(QFrame.StyledPanel)
         second_frame = QFrame(self.user_widget)
         second_frame.setFrameShape(QFrame.StyledPanel)
+        third_frame = QFrame(self.user_widget)
+        third_frame.setFrameShape(QFrame.StyledPanel)
+        fourth_frame = QFrame(self.user_widget)
+        fourth_frame.setFrameShape(QFrame.StyledPanel)
 
         self.user_business_information_name = QTextEdit(self.user_widget)
         self.user_business_information_description = QTextEdit(self.user_widget)
@@ -45,11 +75,18 @@ class BusinessControlSystemGraphic:
         # self.client_telephone = QLineEdit(self.user_widget)
         self.client_massage = QTextEdit(self.user_widget)
         self.client_send_massage_button = QPushButton("Отправить", self.user_widget)
+        self.load_answers_button = QPushButton("Загрузить", self.user_widget)
+        self.loaded_strings = QLineEdit(self.user_widget)
+        self.loaded_strings.setText("Загружено строк:")
 
         first_layout = QFormLayout()
         second_layout = QFormLayout()
+        self.third_layout = QVBoxLayout()
+        fourth_layout = QFormLayout()
         first_frame.setLayout(first_layout)
         second_frame.setLayout(second_layout)
+        third_frame.setLayout(self.third_layout)
+        fourth_frame.setLayout(fourth_layout)
 
         first_layout.addRow(QLabel("Добро пожаловать в систему взаимодействия клиента и бизнеса!"))
         first_layout.addRow(QLabel("Наша компания:"), self.user_business_information_name)
@@ -57,22 +94,38 @@ class BusinessControlSystemGraphic:
 
         second_layout.addRow(QLabel("Напишите сообщение или заказ и отправьте нам!"))
         second_layout.addRow(QLabel("Выберете цель сообщения:"), self.client_types_list)
-        second_layout.addRow(QLabel("Фамилия"), self.client_secondname)
         second_layout.addRow(QLabel("Имя"), self.client_name)
+        second_layout.addRow(QLabel("Фамилия"), self.client_secondname)
         second_layout.addRow(QLabel("Отчество"), self.client_surname)
         # second_layout.addRow(QLabel("Телефон(Для одного клиента вводить всегда в одном виде)"), self.client_telephone)
         second_layout.addRow(QLabel("Введите сообщение"), self.client_massage)
+
+        scroll_area_table = QScrollArea()
+        scroll_area_table.setWidgetResizable(True)
+        scroll_area_table.setMinimumSize(MINSCROLAREASIZE, MINSCROLAREASIZE)
+        scroll_area_table.setWidget(third_frame)
+
+        fourth_layout.addRow(
+            QLabel("Просмотреть ответы на свои запросы (в поле сообщения введите свои данные,кроме сообщения)"),
+            self.load_answers_button)
+        fourth_layout.addRow(self.loaded_strings)
+        fourth_layout.addRow(scroll_area_table)
 
         main_layout = QVBoxLayout()
         main_layout.addWidget(first_frame, stretch=1)
         main_layout.addWidget(second_frame, stretch=2)
         main_layout.addWidget(self.client_send_massage_button)
+        main_layout.addWidget(fourth_frame)
+
         main_layout.addStretch(50)
 
         central_widget = QWidget()
         central_widget.setLayout(main_layout)
 
-        self.user_widget.setCentralWidget(central_widget)
+        self.scroll_area_3.setWidgetResizable(True)
+        self.scroll_area_3.setWidget(central_widget)
+
+        self.user_widget.setCentralWidget(self.scroll_area_3)
 
     def init_ui_buiness_information(self):
         # self.business_infromatiom_menubar = self.menuBarAdmin
@@ -208,7 +261,7 @@ class BusinessControlSystemGraphic:
         self.db_view = QTableWidget(self.db_widget)
         self.type_db_combobox = QComboBox(self.db_widget)
         self.type_db_combobox.addItems(["База данных клиентов", "База данных запросов"])
-        self.db_view.setMinimumSize(500, 500)
+        self.db_view.setMinimumSize(MINSCROLAREASIZE, MINSCROLAREASIZE)
         self.use_name_checkbox = QCheckBox("Искать с таким именем", self.db_widget)
         self.use_secondname_checkbox = QCheckBox("Искать с такой Фамилией", self.db_widget)
         self.use_surname_checkbox = QCheckBox("Искать с таким отчеством", self.db_widget)
@@ -295,6 +348,8 @@ class BusinessControlSystemGraphic:
         self.load_db_requests_button = QPushButton("Загрузить запросы", self.db_widget)
         self.loaded_rows = QLabel(self.db_widget)
         self.types_clients_checkbox = QCheckBox("Использовать определенные типы пользователей", self.db_widget)
+        self.time_checkbox = QCheckBox("Загружать запросы по новизне", self.db_widget)
+        self.time_checkbox.click()
         first_frame = QFrame(self.db_widget)
         first_frame.setFrameShape(QFrame.StyledPanel)
         second_frame = QFrame(self.db_widget)
@@ -325,6 +380,7 @@ class BusinessControlSystemGraphic:
         second_layout.addRow(self.type_db_combobox_requests)
         fourth_layout.addRow(self.types_clients_checkbox, self.scroll_area_2)
         fourth_layout.addRow(self.client_id_checkbox, self.client_id_edit)
+        fourth_layout.addRow(self.time_checkbox)
         fourth_layout.addRow(self.loaded_rows, self.load_db_requests_button)
 
         third_layout.addRow(self.db_view_requests)
@@ -344,7 +400,7 @@ class BusinessControlSystemGraphic:
         main_layout.addWidget(self.scroll_area_table, stretch=50)
         main_layout.addStretch(10)
 
-        self.scroll_area_table.setMinimumSize(10, 500)
+        self.scroll_area_table.setMinimumSize(MINSCROLAREASIZE, MINSCROLAREASIZE)
 
         self.central_widget_requests = QWidget()
         self.central_widget_requests.setLayout(main_layout)
@@ -423,10 +479,6 @@ class BusinessControlSystemGraphic:
         self.main_tool_bar.addAction(self.action_open_clients_types_page)
         self.main_tool_bar.addAction(self.action_open_db_page)
 
-        # self.create_tool_bar_by(self.buiness_information_tool_bar)
-        # self.create_tool_bar_by(self.types_clients_tool_bar)
-        # self.create_tool_bar_by(self.db_tool_bar)
-
         self.buiness_information_tool_bar = QToolBar()
         self.buiness_information_tool_bar.setContextMenuPolicy(Qt.PreventContextMenu)
         self.buiness_information_tool_bar.setMovable(False)
@@ -453,14 +505,3 @@ class BusinessControlSystemGraphic:
         self.db_tool_bar.addAction(self.action_business_information)
         self.db_tool_bar.addAction(self.action_open_clients_types_page)
         self.db_tool_bar.addAction(self.action_open_db_page)
-
-    # def create_tool_bar_by(self, name):
-    #     tool_bar = QToolBar()
-    #     tool_bar.setContextMenuPolicy(Qt.PreventContextMenu)
-    #     tool_bar.setMovable(False)
-    #     tool_bar.setOrientation(Qt.Vertical)
-    #     tool_bar.addAction(self.action_open_main_page)
-    #     tool_bar.addAction(self.action_business_information)
-    #     tool_bar.addAction(self.action_open_clients_types_page)
-    #     tool_bar.addAction(self.action_open_db_page)
-    #     name = tool_bar
