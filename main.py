@@ -126,7 +126,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
     def clients_types_interface(self):
         self.user_types_list.clear()
         try:
-            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open("clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 for row in reader:
                     self.user_types_list.append(row[1])
@@ -164,9 +164,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             QTimer.singleShot(10000, self.restore_default_color)
 
         try:
-            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open("clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 type_list = []
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
+                self.client_types_list.clear()
                 self.client_types_list.clear()
                 for row in reader:
                     self.client_types_list.addItem(row[1])
@@ -183,6 +184,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         self.request_cnt.setText(str(len(result)))
         result = self.cursor.execute("""SELECT * FROM  clients""").fetchall()
         self.client_cnt.setText(str(len(result)))
+        self.stacked_widget.setCurrentWidget(self.admin_widget)
         self.stacked_widget.setCurrentWidget(self.admin_widget)
         self.user_type = "admin"
 
@@ -213,10 +215,10 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def open_config_file(self):
         try:
-            with open(self.global_path + f"\\config.txt", 'r+') as config:
+            with open("config.txt", 'r+') as config:
                 self.config_data = config.readlines()
         except IOError:
-            with open(self.global_path + f"\\config.txt", 'w+') as config:
+            with open("config.txt", 'w+') as config:
                 self.config_data = ['']
                 pass
         if len(self.config_data) == 0:
@@ -280,7 +282,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def exit_app(self):
         self.conn.close()
-        with open(self.global_path + f"\\config.txt", "w", encoding="utf-8") as file:
+        with open( "config.txt", "w", encoding="utf-8") as file:
             file.writelines(self.config_data)
             app.quit()
 
@@ -325,7 +327,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             self.type_list.addItems(self.user_types_list)
 
     def save_types_clients(self):
-        with open(self.global_path + f"\\clients-types.csv", 'w', newline='', encoding="utf8") as csvfile:
+        with open("clients-types.csv", 'w', newline='', encoding="utf8") as csvfile:
             writer = csv.writer(csvfile, delimiter=';', quotechar='"')
             for i in range(self.type_list.count()):
                 item = self.type_list.item(i)
@@ -341,10 +343,11 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             QTimer.singleShot(5000, self.restore_default_color)
 
     def init_sql(self):
-        if not os.path.exists(self.global_path + f"\\clientDB.sqlite"):
+        print(self.global_path)
+        if not os.path.exists("clientDB.sqlite"):
             QMessageBox.warning(self, "Предупреждение", f"База данных не найдена, проверьте базу данных")
         try:
-            self.conn = sqlite3.connect(self.global_path + f"\\clientDB.sqlite")
+            self.conn = sqlite3.connect("clientDB.sqlite")
             self.cursor = self.conn.cursor()
         except Exception as error:
             QMessageBox.warning(self, "Предупреждение", f"Ошибка загрузки базы данных {error}")
@@ -571,7 +574,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def load_client_types(self):
         try:
-            with open(self.global_path + f"\\clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
+            with open(f"clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 self.client_types_checkbox.clear()
                 while self.vbx_layout.count():
