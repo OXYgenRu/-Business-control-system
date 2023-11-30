@@ -282,7 +282,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
 
     def exit_app(self):
         self.conn.close()
-        with open( "config.txt", "w", encoding="utf-8") as file:
+        with open("config.txt", "w", encoding="utf-8") as file:
             file.writelines(self.config_data)
             app.quit()
 
@@ -313,15 +313,16 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             self.current_element_edit.setText(f"{current_item.text()}")
 
     def delete_current_element(self):
-        if self.current_element_edit.text() in self.base_user_types_list:
-            self.check_box_dict[self.current_element_edit.text()].setChecked(False)
-        self.user_types_list.pop(self.user_types_list.index(self.current_element_edit.text()))
-        self.type_list.clear()
-        self.type_list.addItems(self.user_types_list)
-        self.current_element_edit.setText('')
+        if self.current_element_edit.text() in self.user_types_list:
+            if self.current_element_edit.text() in self.base_user_types_list:
+                self.check_box_dict[self.current_element_edit.text()].setChecked(False)
+            self.user_types_list.pop(self.user_types_list.index(self.current_element_edit.text()))
+            self.type_list.clear()
+            self.type_list.addItems(self.user_types_list)
+            self.current_element_edit.setText('')
 
     def add_current_element(self):
-        if self.new_type_edit.text() != '':
+        if self.new_type_edit.text() != '' and self.new_type_edit.text() not in self.user_types_list:
             self.user_types_list.append(self.new_type_edit.text())
             self.type_list.clear()
             self.type_list.addItems(self.user_types_list)
@@ -572,16 +573,19 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
         else:
             self.client_id_edit.setDisabled(True)
 
+    def delete_widgets_from_layout(self, layout):
+        while layout.count():
+            item = layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
+
     def load_client_types(self):
         try:
             with open(f"clients-types.csv", 'r', newline='', encoding="utf8") as csvfile:
                 reader = csv.reader(csvfile, delimiter=';', quotechar='"')
                 self.client_types_checkbox.clear()
-                while self.vbx_layout.count():
-                    item = self.vbx_layout.takeAt(0)
-                    widget = item.widget()
-                    if widget:
-                        widget.deleteLater()
+                self.delete_widgets_from_layout(self.vbx_layout)
                 for row in reader:
                     tp = QCheckBox(row[1])
                     self.vbx_layout.addWidget(tp)
@@ -602,11 +606,7 @@ class BusinessControlSystem(QMainWindow, BusinessControlSystemGraphic):
             to_view = []
             for row in result:
                 data.append(row)
-            while self.third_layout.count():
-                item = self.third_layout.takeAt(0)
-                widget = item.widget()
-                if widget:
-                    widget.deleteLater()
+            self.delete_widgets_from_layout(self.third_layout)
             self.loaded_strings.setText(f"Загружено строк: {len(data)}")
             if len(data) != 0:
                 cnt = len(data)
@@ -641,4 +641,4 @@ if __name__ == "__main__":
     app.aboutToQuit.connect(window.exit_app)
     window.show()
     sys.excepthook = except_hook
-    sys.exit(app.exec())
+    sys.exit(app.exec())    

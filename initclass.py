@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (QWidget, QApplication, QPushButton, QLineEdit, QLab
                              QMainWindow, QButtonGroup, QGridLayout, QTextEdit, QStatusBar, QTextBrowser,
                              QTableWidgetItem, QTableWidget, QInputDialog, QLayout, QSizePolicy, QHBoxLayout,
                              QVBoxLayout, QComboBox, QAction, QMenuBar, QStackedWidget, QFrame, QFormLayout, QToolBar,
-                             QListWidget, QScrollArea)
+                             QListWidget, QScrollArea, QMessageBox)
 
 from PyQt5 import QtCore, QtGui, QtWidgets
 
@@ -417,35 +417,42 @@ class BusinessControlSystemGraphic:
         self.local_stacked_widget.addWidget(self.scroll_area_1)
 
     def create_actions_user(self):
-        self.action_change_type_of_user_user = QAction(QIcon("icons/user-icon.svg"), "Сменить тип пользователя на "
-                                                                                     "администратор", self)
-        self.action_change_type_of_user_user.setShortcut("Ctrl+D")
-        self.action_exit_user = QAction(QIcon("icons/exit-icon.svg"), "Выход", self)
-        self.action_exit_user.setShortcut("Alt+F4")
+        try:
+            self.action_change_type_of_user_user = QAction(QIcon("icons/user-icon.svg"), "Сменить тип пользователя на "
+                                                                                         "администратор", self)
+            self.action_change_type_of_user_user.setShortcut("Ctrl+D")
+            self.action_exit_user = QAction(QIcon("icons/exit-icon.svg"), "Выход", self)
+            self.action_exit_user.setShortcut("Alt+F4")
+        except Exception as error:
+            QMessageBox.warning(self, "Предупреждение", f"Ошибка создания интерфейса {error}")
 
     def create_actions_admin(self):
-        self.action_change_type_of_user_admin = QAction(QIcon("icons/user-icon.svg"), "Сменить тип пользователя на "
-                                                                                      "клиент", self)
-        self.action_change_type_of_user_admin.setShortcut("Ctrl+D")
-        self.action_exit_admin = QAction(QIcon("icons/exit-icon.svg"), "Выход", self)
-        self.action_exit_admin.setShortcut("Alt+F4")
-        self.action_business_information = QAction(QIcon("icons/infromation-icon.svg"), "Открыть информацию о бизнесе",
-                                                   self)
-        self.action_open_main_page = QAction(QIcon("icons/mainpage-icon.svg"), "Главная страница")
-        self.action_open_clients_types_page = QAction(QIcon("icons/types-users-icon.svg"),
-                                                      "Открыть настройки типов клиентов")
-        self.action_create_information_file = QAction(QIcon("icons/create-information-file-icon.svg"),
-                                                      "Создать файл информации")
-        self.action_open_db_page = QAction(QIcon("icons/db-icon.svg"), "Открыть базу данных")
+        try:
+            self.action_change_type_of_user_admin = QAction(QIcon("icons/user-icon.svg"), "Сменить тип пользователя на "
+                                                                                          "клиент", self)
+            self.action_change_type_of_user_admin.setShortcut("Ctrl+D")
+            self.action_exit_admin = QAction(QIcon("icons/exit-icon.svg"), "Выход", self)
+            self.action_exit_admin.setShortcut("Alt+F4")
+            self.action_business_information = QAction(QIcon("icons/infromation-icon.svg"),
+                                                       "Открыть информацию о бизнесе",
+                                                       self)
+            self.action_open_main_page = QAction(QIcon("icons/mainpage-icon.svg"), "Главная страница")
+            self.action_open_clients_types_page = QAction(QIcon("icons/types-users-icon.svg"),
+                                                          "Открыть настройки типов клиентов")
+            self.action_create_information_file = QAction(QIcon("icons/create-information-file-icon.svg"),
+                                                          "Создать файл информации")
+            self.action_open_db_page = QAction(QIcon("icons/db-icon.svg"), "Открыть базу данных")
+        except Exception as error:
+            QMessageBox.warning(self, "Предупреждение", f"Ошибка создания интерфейса {error}")
 
     def create_admin_menubar(self):
         self.menuBarAdmin = QMenuBar()
         self.user_now_admin = self.menuBarAdmin.addMenu("Администратор")
+
         # self.user_now_admin.setStyleSheet("background-color: #FF0000;")
-        self.settingsMenu = self.menuBarAdmin.addMenu("Настройки")
         self.businessInformationMenu = self.menuBarAdmin.addMenu("Информация о бизнесе")
-        self.settingsMenu.addAction(self.action_change_type_of_user_admin)
-        self.settingsMenu.addAction(self.action_exit_admin)
+        self.user_now_admin.addAction(self.action_change_type_of_user_admin)
+        self.user_now_admin.addAction(self.action_exit_admin)
         self.businessInformationMenu.addAction(self.action_business_information)
         self.businessInformationMenu.addAction(self.action_create_information_file)
         self.typesClientsMenu = self.menuBarAdmin.addMenu("Типы клиентов")
@@ -463,7 +470,6 @@ class BusinessControlSystemGraphic:
     def create_menu_bar_by(self):
         menuBar = QMenuBar()
         menuBar.addMenu(self.user_now_admin)
-        menuBar.addMenu(self.settingsMenu)
         menuBar.addMenu(self.businessInformationMenu)
         menuBar.addMenu(self.typesClientsMenu)
         menuBar.addMenu(self.dbMenu)
@@ -472,9 +478,8 @@ class BusinessControlSystemGraphic:
     def create_user_menubar(self):
         self.menuBarUser = QMenuBar()
         self.user_now_user = self.menuBarUser.addMenu("Клиент")
-        self.settingsMenu = self.menuBarUser.addMenu("Настройки")
-        self.settingsMenu.addAction(self.action_change_type_of_user_user)
-        self.settingsMenu.addAction(self.action_exit_user)
+        self.user_now_user.addAction(self.action_change_type_of_user_user)
+        self.user_now_user.addAction(self.action_exit_user)
 
     def create_admin_toolbar(self):
         self.main_tool_bar = QToolBar()
